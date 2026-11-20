@@ -1,22 +1,19 @@
 -- =====================================================================
--- Control de asistencia con lector RFID - VERSION WEB (PHP + MySQL / XAMPP)
+-- Control de asistencia con lector RFID - VERSION WEB (PHP + MySQL)
 --
 -- Diferencia con la version de escritorio: el estudiante se identifica por su
 -- CEDULA (texto de 10 digitos), no por un numero incremental.
 --
--- Como usarlo:
---   1. Iniciar Apache y MySQL en XAMPP.
---   2. Si ya existe una version anterior, borrar la base de datos asistencia_web
---      en phpMyAdmin (pestana Operaciones > Eliminar).
---   3. phpMyAdmin > Importar > elegir este archivo > Continuar.
---   4. Debe quedar con 10 tablas.
+-- Como importarlo (XAMPP o hosting):
+--   1. Crear la base de datos desde phpMyAdmin (XAMPP: se llama asistencia_web)
+--      o desde el panel del hosting (el panel le pone su propio nombre).
+--   2. Entrar a esa base y pulsar Importar > elegir este archivo > Continuar.
+--      Este archivo NO crea la base: se importa dentro de la que se eligio.
+--   3. Debe quedar con 10 tablas.
+--   Si ya existia una version anterior, borrar las tablas antes de importar.
 --
 -- Guardar este archivo en UTF-8 para que las tildes se vean bien.
 -- =====================================================================
-
-CREATE DATABASE IF NOT EXISTS asistencia_web
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE asistencia_web;
 
 -- ---------------------------------------------------------------------
 -- TABLAS
