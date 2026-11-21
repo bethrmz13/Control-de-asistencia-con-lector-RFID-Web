@@ -1,5 +1,13 @@
+# Editores y sistema
 .vscode/
 .idea/
 Thumbs.db
 .DS_Store
+
+# Archivos temporales y registros
 *.log
+*.tmp
+reportes/tmp/
+
+# Claves del hosting o de la base local (NUNCA se suben a GitHub)
+config.local.php
