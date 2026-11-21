@@ -246,7 +246,6 @@ Los módulos son independientes entre sí: cada quien puede hacer y probar el su
 | **Tatiana** | **Asignaturas**, **Mis notas y asistencias**, **Mi horario**, **Inscritos** (consultas de solo lectura y un CRUD sencillo) |
 | **Brayan** | Páginas públicas: **Inicio, Nosotros, Contáctanos y Descargas**, con el jQuery de cada una, las imágenes y el video, el archivo para descargar, la **guía APE** y las capturas |
 
-
 ## Subir al hosting
 
 El ingeniero revisa el trabajo **hospedado** (gratuito o pagado). Lo hace Ali, y conviene hacer un primer despliegue con la base vacía desde el primer día, para descubrir los problemas pronto.
