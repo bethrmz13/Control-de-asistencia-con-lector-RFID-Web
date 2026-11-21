@@ -246,17 +246,6 @@ Los módulos son independientes entre sí: cada quien puede hacer y probar el su
 | **Tatiana** | **Asignaturas**, **Mis notas y asistencias**, **Mi horario**, **Inscritos** (consultas de solo lectura y un CRUD sencillo) |
 | **Brayan** | Páginas públicas: **Inicio, Nosotros, Contáctanos y Descargas**, con el jQuery de cada una, las imágenes y el video, el archivo para descargar, la **guía APE** y las capturas |
 
-### Calendario
-
-| Día | Qué pasa |
-|---|---|
-| Mié 18 | Base del proyecto, hosting y primer despliegue de prueba |
-| Jue 19 a sáb 21 | Cada quien hace su módulo |
-| Dom 22 | Integración, despliegue completo y pruebas **en el hosting** |
-| **Lun 23** | **Listo en el hosting.** Solo correcciones |
-| Mar 24 y mié 25 | Colchón, ensayo y **aviso al ingeniero** (dirección y usuarios) |
-| **Jue 26** | Entrega |
-
 ## Subir al hosting
 
 El ingeniero revisa el trabajo **hospedado** (gratuito o pagado). Lo hace Ali, y conviene hacer un primer despliegue con la base vacía desde el primer día, para descubrir los problemas pronto.
