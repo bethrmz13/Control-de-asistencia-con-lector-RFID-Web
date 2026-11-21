@@ -77,7 +77,7 @@ db/                  schema.sql
 
 ## Reglas de negocio
 
-**Asistencia.** La tarjeta registra asistencia si el estudiante está matriculado en una clase de hoy, la fecha está dentro del periodo activo y pasa la tarjeta **desde la hora de inicio hasta 15 minutos después**. Nada antes del inicio. Resultados: `REGISTRADO`, `YA_REGISTRADO`, `NO_ENCONTRADO`, `SIN_CLASES_HOY`, `FUERA_DE_HORARIO` y `ERROR_GUARDADO`. La hora es **siempre la del servidor**. La simulación de fecha y hora solo está disponible para los perfiles con menú, nunca para REGISTRO.
+**Asistencia.** La tarjeta registra asistencia si el estudiante está matriculado en una clase de hoy, la fecha está dentro del periodo activo y pasa la tarjeta **durante la clase**: desde la hora de inicio hasta antes de la hora de fin. Antes del inicio o después del fin no se registra. Resultados: `REGISTRADO`, `YA_REGISTRADO`, `NO_ENCONTRADO`, `SIN_CLASES_HOY`, `FUERA_DE_HORARIO` y `ERROR_GUARDADO`. La hora es **siempre la del servidor**. La simulación de fecha y hora solo está disponible para el ADMIN, nunca para REGISTRO.
 
 **Matrícula.** La abre y la cierra el administrador. El estudiante se matricula en **máximo 5 materias** por periodo, eligiendo materia y paralelo. Solo ve materias de su carrera, de su nivel o inferiores, con estado `AUN_NO_CURSA` o `REPROBADA`, sin choque de horarios. Solo puede anular con la matrícula abierta y la materia sin nota.
 
@@ -239,23 +239,13 @@ Los módulos son independientes entre sí: cada quien puede hacer y probar el su
 
 | Integrante | Módulos |
 |---|---|
-| **Ali** | Base del proyecto, login y sesión, menú por perfil, hosting y despliegue, **Usuarios**, **Periodos** (activar, abrir y cerrar matrícula), integración |
-| **Damaris** | **Registro de asistencia** (lector y regla de asistencia), **Matrícula** del estudiante, **Cierre de periodo** |
+| **Ali** | Base del proyecto, login y sesión, menú por perfil, hosting y despliegue, **Usuarios**, **Periodos** (activar y abrir o cerrar la matrícula), integración |
+| **Damaris** | **Registro de asistencia** (lector y regla de asistencia), **Matrícula** del estudiante, **Cierre de periodo** (página propia, solo ADMIN) |
 | **Evelyn** | **Estudiantes** (cédula, tarjeta, tabla de materias), **Horarios** (con sus validaciones) |
 | **Victoria** | **Grupos**, **Notas**, **Reportes** (FPDF) |
 | **Tatiana** | **Asignaturas**, **Mis notas y asistencias**, **Mi horario**, **Inscritos** (consultas de solo lectura y un CRUD sencillo) |
 | **Brayan** | Páginas públicas: **Inicio, Nosotros, Contáctanos y Descargas**, con el jQuery de cada una, las imágenes y el video, el archivo para descargar, la **guía APE** y las capturas |
 
-### Calendario
-
-| Día | Qué pasa |
-|---|---|
-| Mié 18 | Base del proyecto, hosting y primer despliegue de prueba |
-| Jue 19 a sáb 21 | Cada quien hace su módulo |
-| Dom 22 | Integración, despliegue completo y pruebas **en el hosting** |
-| **Lun 23** | **Listo en el hosting.** Solo correcciones |
-| Mar 24 y mié 25 | Colchón, ensayo y **aviso al ingeniero** (dirección y usuarios) |
-| **Jue 26** | Entrega |
 
 ## Subir al hosting
 
