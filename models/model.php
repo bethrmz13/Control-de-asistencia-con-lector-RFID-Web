@@ -19,6 +19,7 @@ class EnlacesModel {
         'grupos'      => array('titulo' => 'Grupos',                  'perfiles' => array('ADMIN', 'COORDINADOR'), 'menu' => 'sistema'),
         'horarios'    => array('titulo' => 'Horarios',                'perfiles' => array('ADMIN', 'COORDINADOR'), 'menu' => 'sistema'),
         'periodos'    => array('titulo' => 'Periodos',                'perfiles' => array('ADMIN'), 'menu' => 'sistema'),
+        'cierre'      => array('titulo' => 'Cierre de periodo',       'perfiles' => array('ADMIN'), 'menu' => 'sistema'),
         'registro'    => array('titulo' => 'Registro de asistencia',  'perfiles' => array('ADMIN', 'REGISTRO'), 'menu' => 'sistema'),
         'notas'       => array('titulo' => 'Notas',                   'perfiles' => array('ADMIN', 'DOCENTE'), 'menu' => 'sistema'),
         'reportes'    => array('titulo' => 'Reportes',                'perfiles' => array('ADMIN', 'COORDINADOR', 'DOCENTE'), 'menu' => 'sistema'),
