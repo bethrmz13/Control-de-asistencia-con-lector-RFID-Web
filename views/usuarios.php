@@ -69,8 +69,8 @@
     $(function () {
 
         var modal = new bootstrap.Modal(document.getElementById('modalUsuario'));
-        var lista = [];     // lo que llegó del servidor; los botones guardan la posición en esta lista
-        var yo = 0;         // id del usuario que inició sesión
+        var lista = [];     // lo que llegÃ³ del servidor; los botones guardan la posiciÃ³n en esta lista
+        var yo = 0;         // id del usuario que iniciÃ³ sesiÃ³n
 
         function cargar() {
             $.getJSON('models/usuarios/select.php', function (r) {
@@ -83,7 +83,7 @@
                 var html = '';
                 $.each(lista, function (i, u) {
                     var estado = (u.activo == 1)
-                        ? '<span class="badge bg-success">Sí</span>'
+                        ? '<span class="badge bg-success">SÃ­</span>'
                         : '<span class="badge bg-secondary">No</span>';
                     // Al propio usuario no se le ofrece eliminar
                     var eliminar = (u.id == yo) ? '' :
@@ -126,11 +126,11 @@
             actualizarCarrera();
         }
 
-        // Validación del navegador (el servidor valida de nuevo)
+        // ValidaciÃ³n del navegador (el servidor valida de nuevo)
         function validar() {
             var esNuevo = ($('#id').val() === '');
             if (!/^[A-Za-z0-9._-]{1,30}$/.test($('#username').val().trim())) {
-                mostrarMensaje('#mensajeModal', 'El usuario debe tener de 1 a 30 caracteres: letras, números, punto, guion o guion bajo', 'warning');
+                mostrarMensaje('#mensajeModal', 'El usuario debe tener de 1 a 30 caracteres: letras, nÃºmeros, punto, guion o guion bajo', 'warning');
                 $('#username').focus();
                 return false;
             }
@@ -169,7 +169,7 @@
             var u = lista[$(this).data('i')];
             limpiarFormulario();
             $('#tituloModal').text('Editar usuario');
-            $('#ayudaClave').text('Déjela vacía para no cambiar la clave');
+            $('#ayudaClave').text('DÃ©jela vacÃ­a para no cambiar la clave');
             $('#id').val(u.id);
             $('#username').val(u.username);
             $('#nombre').val(u.nombre);
@@ -210,7 +210,7 @@
 
         $(document).on('click', '.btnEliminar', function () {
             var u = lista[$(this).data('i')];
-            if (!confirm('¿Eliminar al usuario ' + u.username + '?')) {
+            if (!confirm('Â¿Eliminar al usuario ' + u.username + '?')) {
                 return;
             }
             $.post('models/usuarios/delete.php', { id: u.id }, function (r) {
@@ -227,3 +227,4 @@
         cargar();
     });
 </script>
+
