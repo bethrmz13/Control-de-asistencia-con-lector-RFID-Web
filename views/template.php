@@ -63,6 +63,16 @@ $menu = EnlacesModel::menu($u);
     </nav>
     <?php } ?>
 
+    <?php if ($kiosco) { ?>
+        <div class="container text-end my-2">
+            <a href="models/logout.php"
+            class="btn btn-outline-secondary btn-sm"
+            onclick="return confirm('¿Desea cerrar la sesión?');">
+                Salir
+            </a>
+        </div>
+    <?php } ?>
+
     <!-- Seccion de trabajo: aqui se muestra la pagina pedida -->
     <main class="container my-4">
         <?php $this->enlacesPagina(); ?>
