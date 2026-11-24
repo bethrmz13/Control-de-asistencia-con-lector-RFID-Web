@@ -42,6 +42,17 @@
         border: 1px solid var(--inicio-borde);
         border-top: .2rem solid #1d6fa5;
     }
+
+    #inicio .inicio-video {
+        max-width: 48rem;
+        max-height: 28rem;
+    }
+
+    @media (max-width: 767.98px) {
+        #inicio .inicio-carrusel-texto {
+            min-height: 10rem;
+        }
+    }
 </style>
 
 <div id="inicio">
@@ -60,7 +71,7 @@
                         <div class="col-md-7">
                             <img src="images/inicio-rfid.svg" class="inicio-ilustracion" width="640" height="360" alt="Una tarjeta RFID junto a un lector que registra su lectura">
                         </div>
-                        <div class="col-md-5 p-4 p-lg-5">
+                        <div class="col-md-5 p-4 p-lg-5 inicio-carrusel-texto">
                             <h3 class="inicio-titulo h4">Registro con tarjetas RFID</h3>
                             <p class="mb-0">El lector identifica la tarjeta del estudiante para asociar el registro de asistencia con su clase.</p>
                         </div>
@@ -71,7 +82,7 @@
                         <div class="col-md-7">
                             <img src="images/inicio-horarios.svg" class="inicio-ilustracion" width="640" height="360" alt="Calendario semanal con bloques de clase y un reloj">
                         </div>
-                        <div class="col-md-5 p-4 p-lg-5">
+                        <div class="col-md-5 p-4 p-lg-5 inicio-carrusel-texto">
                             <h3 class="inicio-titulo h4">Organización de horarios</h3>
                             <p class="mb-0">La administración académica organiza las clases de cada grupo por día, hora y aula.</p>
                         </div>
@@ -82,14 +93,14 @@
                         <div class="col-md-7">
                             <img src="images/inicio-consulta.svg" class="inicio-ilustracion" width="640" height="360" alt="Una lupa destaca una fila en una lista de asistencia">
                         </div>
-                        <div class="col-md-5 p-4 p-lg-5">
+                        <div class="col-md-5 p-4 p-lg-5 inicio-carrusel-texto">
                             <h3 class="inicio-titulo h4">Consulta de asistencia</h3>
                             <p class="mb-0">Los registros de asistencia sirven para revisar la participación de los estudiantes en sus clases.</p>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="inicio-controles d-flex flex-wrap justify-content-center align-items-center gap-2 p-3">
+            <div class="inicio-controles d-flex flex-wrap justify-content-center align-items-center gap-2 p-2 p-sm-3">
                 <button type="button" class="btn btn-outline-primary" data-bs-target="#inicioCarrusel" data-bs-slide="prev">Anterior</button>
                 <div class="carousel-indicators">
                     <button type="button" data-bs-target="#inicioCarrusel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Registro con tarjetas RFID"></button>
@@ -98,6 +109,7 @@
                 </div>
                 <button type="button" class="btn btn-outline-primary" data-bs-target="#inicioCarrusel" data-bs-slide="next">Siguiente</button>
             </div>
+            <p id="inicioCarruselEstado" class="visually-hidden" role="status"></p>
         </div>
     </section>
 
@@ -153,11 +165,47 @@
     <section class="inicio-portada rounded-3 p-4 p-md-5" aria-labelledby="inicioDemoTitulo">
         <h2 id="inicioDemoTitulo" class="inicio-titulo h3 mb-3">Demostración del sistema RFID</h2>
         <?php if ($demoDisponible) { ?>
-            <video id="inicioVideo" class="w-100 rounded bg-dark" controls preload="metadata" playsinline aria-labelledby="inicioDemoTitulo" src="images/demo.mp4">
-                Tu navegador no admite la reproducción de video HTML5.
+            <p id="inicioVideoEstado" class="mb-0" role="status">Cargando la demostración del lector RFID.</p>
+            <video id="inicioVideo" class="inicio-video w-100 rounded bg-dark" controls preload="metadata" playsinline hidden aria-labelledby="inicioDemoTitulo" src="images/demo.mp4">
             </video>
+            <noscript>Activa JavaScript para ver la demostración.</noscript>
         <?php } else { ?>
             <p class="mb-0">El video del lector RFID estará disponible cuando se incorpore la grabación de la demostración.</p>
         <?php } ?>
     </section>
 </div>
+
+<script>
+    $(function () {
+        var $carrusel = $('#inicioCarrusel');
+        var total = $carrusel.find('.carousel-item').length;
+        bootstrap.Carousel.getOrCreateInstance($carrusel[0]);
+
+        $carrusel.on('slid.bs.carousel', function (evento) {
+            var titulo = $(evento.relatedTarget).find('h3').text();
+            $('#inicioCarruselEstado').text('Diapositiva ' + (evento.to + 1) + ' de ' + total + '. ' + titulo);
+        });
+
+        var $video = $('#inicioVideo');
+        if ($video.length) {
+            var $estado = $('#inicioVideoEstado');
+
+            function mostrarVideo() {
+                $video.prop('hidden', false);
+                $estado.empty().prop('hidden', true);
+            }
+
+            function avisarError() {
+                $video.prop('hidden', true);
+                $estado.text('El video de la demostración no se pudo reproducir.').prop('hidden', false);
+            }
+
+            $video.on('loadedmetadata', mostrarVideo).on('error', avisarError);
+            if ($video[0].error) {
+                avisarError();
+            } else if ($video[0].readyState >= 1) {
+                mostrarVideo();
+            }
+        }
+    });
+</script>
