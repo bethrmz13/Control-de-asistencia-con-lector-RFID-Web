@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="fondo" x2="1" y2="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#0d3b66"/>
+      <stop offset="1" stop-color="#1d6fa5"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#fondo)"/>
+  <circle cx="319" cy="180" r="144" fill="none" stroke="#a5dcff" stroke-opacity=".25"/>
+  <circle cx="319" cy="180" r="170" fill="none" stroke="#a5dcff" stroke-opacity=".18"/>
+  <path d="M80 284h480" stroke="#a5dcff" stroke-opacity=".35" stroke-width="2"/>
+  <rect x="150" y="82" width="312" height="189" rx="17" fill="#082a49" opacity=".5"/>
+  <rect x="150" y="72" width="312" height="189" rx="17" fill="#eff8ff"/>
+  <path d="M150 89a17 17 0 0 1 17-17h278a17 17 0 0 1 17 17v23H150z" fill="#9dccee"/>
+  <path d="M174 92h53" stroke="#0d3b66" stroke-width="5" stroke-linecap="round"/>
+  <path d="M171 158h269m-269 43h269" stroke="#d1e4f2" stroke-width="2"/>
+  <g fill="none" stroke="#208775" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m177 134 5 5 9-10m-14 48 5 5 9-10m-14 48 5 5 9-10"/>
+  </g>
+  <path d="M208 134h120m-120 43h91m-91 43h111" stroke="#799fb9" stroke-width="5" stroke-linecap="round"/>
+  <path d="M369 134h48m-48 43h48m-48 43h48" stroke="#3185b9" stroke-width="5" stroke-linecap="round"/>
+  <path d="m443 216 57 52" stroke="#092c4d" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="410" cy="187" r="50" fill="#e1f6ff" fill-opacity=".7" stroke="#0d3b66" stroke-width="9"/>
+  <path d="M388 187h44m-44 14h30" stroke="#1d6fa5" stroke-width="5" stroke-linecap="round"/>
+</svg>
