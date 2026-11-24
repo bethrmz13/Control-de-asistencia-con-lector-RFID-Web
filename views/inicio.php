@@ -101,7 +101,7 @@
         </div>
     </section>
 
-    <section aria-labelledby="inicioCaracteristicas">
+    <section class="mb-5" aria-labelledby="inicioCaracteristicas">
         <h2 id="inicioCaracteristicas" class="inicio-titulo h3 mb-3">Características del sistema</h2>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
             <div class="col">
@@ -145,5 +145,19 @@
                 </article>
             </div>
         </div>
+    </section>
+    <?php
+    $rutaDemo = __DIR__ . '/../images/demo.mp4';
+    $demoDisponible = is_file($rutaDemo) && is_readable($rutaDemo) && filesize($rutaDemo) > 0;
+    ?>
+    <section class="inicio-portada rounded-3 p-4 p-md-5" aria-labelledby="inicioDemoTitulo">
+        <h2 id="inicioDemoTitulo" class="inicio-titulo h3 mb-3">Demostración del sistema RFID</h2>
+        <?php if ($demoDisponible) { ?>
+            <video id="inicioVideo" class="w-100 rounded bg-dark" controls preload="metadata" playsinline aria-labelledby="inicioDemoTitulo" src="images/demo.mp4">
+                Tu navegador no admite la reproducción de video HTML5.
+            </video>
+        <?php } else { ?>
+            <p class="mb-0">El video del lector RFID estará disponible cuando se incorpore la grabación de la demostración.</p>
+        <?php } ?>
     </section>
 </div>
