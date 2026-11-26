@@ -168,7 +168,7 @@ JOIN asignatura a ON a.carrera_id = (SELECT id FROM carrera WHERE nombre = 'Soft
 WHERE p.activo = 1;
 
 -- Horarios (1 = lunes ... 7 = domingo)
--- Sistemas Operativos choca a proposito con POO (lunes 16:00 a 18:00)
+-- Los horarios de prueba evitan cruces entre grupos del mismo docente y estudiantes.
 INSERT IGNORE INTO horario (grupo_id, dia_semana, hora_inicio, hora_fin, aula) VALUES
 ((SELECT g.id FROM grupo g JOIN asignatura a ON a.id = g.asignatura_id WHERE a.nombre = 'Cálculo' AND g.paralelo = 'A'),
   1, '08:00:00', '10:00:00', 'A-101'),
@@ -177,7 +177,7 @@ INSERT IGNORE INTO horario (grupo_id, dia_semana, hora_inicio, hora_fin, aula) V
 ((SELECT g.id FROM grupo g JOIN asignatura a ON a.id = g.asignatura_id WHERE a.nombre = 'Base de Datos' AND g.paralelo = 'A'),
   1, '18:00:00', '20:00:00', 'A-102'),
 ((SELECT g.id FROM grupo g JOIN asignatura a ON a.id = g.asignatura_id WHERE a.nombre = 'Sistemas Operativos' AND g.paralelo = 'A'),
-  1, '16:00:00', '18:00:00', 'A-105'),
+  1, '14:00:00', '16:00:00', 'A-105'),
 ((SELECT g.id FROM grupo g JOIN asignatura a ON a.id = g.asignatura_id WHERE a.nombre = 'Ingeniería de Software' AND g.paralelo = 'A'),
   2, '10:00:00', '12:00:00', 'A-103'),
 ((SELECT g.id FROM grupo g JOIN asignatura a ON a.id = g.asignatura_id WHERE a.nombre = 'Estadística' AND g.paralelo = 'A'),
