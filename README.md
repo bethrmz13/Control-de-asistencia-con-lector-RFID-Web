@@ -277,9 +277,9 @@ El ingeniero revisa el trabajo **hospedado** (gratuito o pagado). Lo hace Ali, y
 - [x] Estructura MVC, plantilla y lista de páginas por perfil
 - [x] Base de datos con la cédula como clave
 - [x] Login con sesión y guardia de perfil
-- [ ] Hosting creado y primer despliegue
-- [ ] Módulos del sistema
-- [ ] Páginas públicas con jQuery y multimedia
-- [ ] Reportes en PDF
-- [ ] Pruebas con el lector RFID real, en el hosting
-- [ ] Guía APE
+- [x] Hosting creado y primer despliegue
+- [x] Módulos del sistema
+- [x] Páginas públicas con jQuery y multimedia
+- [x] Reportes en PDF
+- [x] Pruebas con el lector RFID real, en el hosting
+
