@@ -1,8 +1,9 @@
+<?php $u = usuarioActual(); $esCoordinador = ($u !== null && $u['perfil'] === 'COORDINADOR'); ?>
 <h3>Inscritos</h3>
 
 <div id="mensaje"></div>
 
-<!-- Selección de asignatura y paralelo -->
+<!-- Selección en cadena: carrera, nivel, asignatura y paralelo -->
 <div class="card mb-4">
 
     <div class="card-header bg-primary text-white">
@@ -18,19 +19,27 @@
 
         <div class="row">
 
-            <div class="col-md-8 mb-3">
+            <div id="campoCarreraInscritos" class="col-md-3 mb-3">
+                <label for="carreraGrupoInscritos" class="form-label">Carrera</label>
+                <select id="carreraGrupoInscritos" class="form-select"><option value="">Seleccione una carrera</option></select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="nivelGrupoInscritos" class="form-label">Nivel</label>
+                <select id="nivelGrupoInscritos" class="form-select" disabled><option value="">Seleccione carrera</option></select>
+            </div>
+            <div class="col-md-4 mb-3">
 
                 <label for="asignatura" class="form-label">
                     Asignatura
                 </label>
 
-                <select id="asignatura" class="form-select">
+                <select id="asignatura" class="form-select" disabled>
                     <option value="">Seleccione una asignatura</option>
                 </select>
 
             </div>
 
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
 
                 <label for="paralelo" class="form-label">
                     Paralelo
@@ -48,8 +57,10 @@
 
         </div>
 
+        <div id="avisoFiltros" aria-live="polite"></div>
+
         <p class="text-muted mb-0">
-            Seleccione una asignatura y su paralelo
+                    Seleccione carrera, nivel, asignatura y paralelo
             para consultar los estudiantes matriculados.
         </p>
 
@@ -76,11 +87,16 @@
 
             <div class="row">
 
-                <div class="col-md-6 mb-2">
+                <div class="col-md-4 mb-2">
 
                     <strong>Asignatura:</strong>
                     <span id="nombreAsignatura"></span>
 
+                </div>
+
+                <div class="col-md-2 mb-2">
+                    <strong>Nivel:</strong>
+                    <span id="nivelGrupoElegido"></span>
                 </div>
 
                 <div class="col-md-2 mb-2">
@@ -131,7 +147,7 @@
                         <td colspan="4"
                             class="text-center text-muted">
 
-                            Seleccione una asignatura y un paralelo.
+                            Seleccione una carrera, nivel, asignatura y paralelo.
 
                         </td>
 
@@ -180,6 +196,7 @@
         var grupos = [];
         var estudiantes = [];
         var solicitudLista = null;
+        var esCoordinador = <?php echo $esCoordinador ? 'true' : 'false'; ?>;
 
         // Cargar asignaturas y grupos permitidos.
         function cargar() {
@@ -207,11 +224,18 @@
 
                     grupos = r.grupos;
 
-                    llenarCombo(
-                        '#asignatura',
-                        r.asignaturas,
-                        'Seleccione una asignatura'
-                    );
+                    var carreras = [];
+                    var carrerasVistas = {};
+                    $.each(grupos, function (_, grupo) {
+                        if (!carrerasVistas[grupo.carrera_id]) {
+                            carrerasVistas[grupo.carrera_id] = true;
+                            carreras.push({id:grupo.carrera_id, texto:grupo.carrera});
+                        }
+                    });
+                    llenarCombo('#carreraGrupoInscritos', carreras, 'Seleccione una carrera');
+
+                    llenarCombo('#asignatura', [], 'Seleccione una carrera primero');
+                    $('#asignatura').prop('disabled', true);
 
                     if (r.periodo === null) {
 
@@ -221,7 +245,7 @@
                             'info'
                         );
 
-                        $('#asignatura').prop('disabled', true);
+                        $('#carreraGrupoInscritos').prop('disabled', true);
 
                     } else if (r.asignaturas.length === 0) {
 
@@ -231,7 +255,7 @@
                             'info'
                         );
 
-                        $('#asignatura').prop('disabled', true);
+                        $('#carreraGrupoInscritos').prop('disabled', true);
 
                     }
 
@@ -276,6 +300,7 @@
             $('#nombreParalelo').text('');
 
             $('#nombreCarrera').text('');
+            $('#nivelGrupoElegido').text('');
 
             $('#mensajeLista').html('');
 
@@ -293,7 +318,7 @@
 
                 '<td colspan="4" class="text-center text-muted">' +
 
-                'Seleccione una asignatura y un paralelo.' +
+                'Seleccione una carrera, nivel, asignatura y paralelo.' +
 
                 '</td>' +
 
@@ -302,6 +327,48 @@
             );
 
         }
+
+        $('#carreraGrupoInscritos').on('change', function () {
+            limpiarLista();
+            $('#avisoFiltros').html('');
+            llenarCombo('#asignatura', [], 'Seleccione una asignatura');
+            llenarCombo('#paralelo', [], 'Seleccione un paralelo');
+            $('#asignatura, #paralelo').prop('disabled', true);
+            var carrera = $(this).val();
+            var niveles = [];
+            $.each(grupos, function (_, grupo) {
+                var nivel = String(grupo.nivel);
+                if (String(grupo.carrera_id) === carrera && niveles.indexOf(nivel) < 0) niveles.push(nivel);
+            });
+            niveles.sort(function (a, b) { return Number(a) - Number(b); });
+            llenarCombo('#nivelGrupoInscritos', niveles.map(function (n) { return {id:n, texto:'Nivel ' + n}; }), 'Seleccione un nivel');
+            $('#nivelGrupoInscritos').prop('disabled', !carrera || !niveles.length);
+            if (carrera && !niveles.length) {
+                mostrarMensaje('#avisoFiltros', 'No hay grupos creados para esta carrera en el periodo activo.', 'info');
+            }
+        });
+
+        $('#nivelGrupoInscritos').on('change', function () {
+            limpiarLista();
+            $('#avisoFiltros').html('');
+            llenarCombo('#paralelo', [], 'Seleccione un paralelo');
+            $('#paralelo').prop('disabled', true);
+            var carrera = $('#carreraGrupoInscritos').val();
+            var nivel = $(this).val();
+            var asignaturas = [];
+            var vistas = {};
+            $.each(grupos, function (_, grupo) {
+                if (String(grupo.carrera_id) === carrera && String(grupo.nivel) === nivel && !vistas[grupo.asignatura_id]) {
+                    vistas[grupo.asignatura_id] = true;
+                    asignaturas.push({id:grupo.asignatura_id, texto:grupo.asignatura});
+                }
+            });
+            llenarCombo('#asignatura', asignaturas, asignaturas.length ? 'Seleccione una asignatura' : 'No hay asignaturas con grupos');
+            $('#asignatura').prop('disabled', !asignaturas.length);
+            if (nivel && !asignaturas.length) {
+                mostrarMensaje('#avisoFiltros', 'No hay grupos de esta carrera y nivel en el periodo activo. Cree primero el grupo en la sección Grupos.', 'info');
+            }
+        });
 
         // Cargar los paralelos de la asignatura seleccionada.
         $('#asignatura').on('change', function () {
@@ -315,6 +382,8 @@
             $.each(grupos, function (i, grupo) {
 
                 if (
+                    String(grupo.carrera_id) === String($('#carreraGrupoInscritos').val()) &&
+                    String(grupo.nivel) === String($('#nivelGrupoInscritos').val()) &&
                     String(grupo.asignatura_id) === asignaturaId
                 ) {
 
@@ -403,6 +472,8 @@
                     $('#nombreCarrera').text(
                         r.carrera
                     );
+
+                    $('#nivelGrupoElegido').text(r.nivel);
 
                     $('#informacionGrupo').removeClass(
                         'd-none'

@@ -1,8 +1,9 @@
+<?php $u = usuarioActual(); $esCoordinador = ($u !== null && $u['perfil'] === 'COORDINADOR'); ?>
 <h3>Notas</h3>
 
 <div id="mensaje"></div>
 
-<!-- Filtros en cadena: nivel -> asignatura -> paralelo -->
+<!-- Filtros en cadena: carrera -> nivel -> asignatura -> paralelo -->
 <div class="card mb-4">
 
     <div class="card-header bg-primary text-white">Selección del grupo</div>
@@ -16,14 +17,19 @@
 
         <div class="row">
 
-            <div class="col-md-3 mb-3">
+            <div id="campoCarreraNotas" class="col-md-3 mb-3">
+                <label for="carrera" class="form-label">Carrera</label>
+                <select id="carrera" class="form-select"><option value="">Seleccione una carrera</option></select>
+            </div>
+
+            <div class="col-md-2 mb-3">
                 <label for="nivel" class="form-label">Nivel</label>
-                <select id="nivel" class="form-select">
-                    <option value="">Seleccione un nivel</option>
+                <select id="nivel" class="form-select" disabled>
+                    <option value="">Seleccione carrera</option>
                 </select>
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="col-md-4 mb-3">
                 <label for="asignatura" class="form-label">Asignatura</label>
                 <select id="asignatura" class="form-select" disabled>
                     <option value="">Seleccione una asignatura</option>
@@ -55,6 +61,8 @@
         <div id="mensajeNotas"></div>
 
         <p id="infoGrupo" class="d-none">
+            <strong>Carrera:</strong> <span id="nombreCarreraGrupo"></span> &nbsp;
+            <strong>Nivel:</strong> <span id="nivelSeleccionado"></span> &nbsp;
             <strong>Asignatura:</strong> <span id="nombreAsignatura"></span> &nbsp;
             <strong>Paralelo:</strong> <span id="nombreParalelo"></span>
         </p>
@@ -75,7 +83,7 @@
 
                 <tbody>
                     <tr>
-                        <td colspan="5" class="text-center text-muted">Seleccione un nivel, una asignatura y un paralelo.</td>
+                        <td colspan="5" class="text-center text-muted">Seleccione una carrera, nivel, asignatura y paralelo.</td>
                     </tr>
                 </tbody>
 
@@ -105,6 +113,7 @@
         var grupos = [];
         var estudiantes = [];
         var grupoActual = null;
+        var esCoordinador = <?php echo $esCoordinador ? 'true' : 'false'; ?>;
 
         // Carga los grupos (el servidor ya filtra por docente)
         function cargar() {
@@ -114,27 +123,28 @@
                 if (r.error) {
                     mostrarMensaje('#mensaje', r.error, 'danger');
                     $('#nivel').prop('disabled', true);
+                    $('#carrera').prop('disabled', true);
                     return;
                 }
 
                 $('#periodo').text(r.periodo);
                 grupos = r.grupos;
 
-                // Niveles distintos
-                var niveles = [];
-                var vistos = {};
+                // Carreras disponibles entre los grupos que puede gestionar el usuario.
+                var carreras = [];
+                var vistasCarreras = {};
                 $.each(grupos, function (i, g) {
-                    if (!vistos[g.nivel]) {
-                        vistos[g.nivel] = true;
-                        niveles.push({id: g.nivel, texto: 'Nivel ' + g.nivel});
+                    if (!vistasCarreras[g.carrera_id]) {
+                        vistasCarreras[g.carrera_id] = true;
+                        carreras.push({id:g.carrera_id, texto:g.carrera});
                     }
                 });
-                niveles.sort(function (a, b) { return a.id - b.id; });
-                llenarCombo('#nivel', niveles, 'Seleccione un nivel');
+                llenarCombo('#carrera', carreras, 'Seleccione una carrera');
 
                 if (grupos.length === 0) {
                     mostrarMensaje('#mensaje', 'No tiene grupos asignados en este periodo.', 'info');
                     $('#nivel').prop('disabled', true);
+                    $('#carrera').prop('disabled', true);
                 }
 
             }).fail(function (xhr) {
@@ -157,10 +167,26 @@
             $('#btnGuardar').prop('disabled', true);
             $('#tablaNotas tbody').html(
                 '<tr><td colspan="5" class="text-center text-muted">' +
-                'Seleccione un nivel, una asignatura y un paralelo.</td></tr>');
+                'Seleccione una carrera, nivel, asignatura y paralelo.</td></tr>');
         }
 
-        // Nivel -> asignaturas de ese nivel
+        // Carrera -> niveles disponibles.
+        $('#carrera').on('change', function () {
+            limpiarNotas();
+            llenarCombo('#asignatura', [], 'Seleccione una asignatura');
+            llenarCombo('#paralelo', [], 'Seleccione un paralelo');
+            $('#asignatura, #paralelo').prop('disabled', true);
+            var carrera = $(this).val();
+            var niveles = [];
+            $.each(grupos, function (_, g) {
+                if (String(g.carrera_id) === carrera && niveles.indexOf(String(g.nivel)) < 0) niveles.push(String(g.nivel));
+            });
+            niveles.sort(function (a, b) { return Number(a) - Number(b); });
+            llenarCombo('#nivel', niveles.map(function (n) { return {id:n, texto:'Nivel ' + n}; }), 'Seleccione un nivel');
+            $('#nivel').prop('disabled', !carrera || !niveles.length);
+        });
+
+        // Nivel -> asignaturas de la carrera seleccionada.
         $('#nivel').on('change', function () {
 
             limpiarNotas();
@@ -172,7 +198,7 @@
             var vistas = {};
 
             $.each(grupos, function (i, g) {
-                if (String(g.nivel) === nivel && !vistas[g.asignatura_id]) {
+                if (String(g.carrera_id) === String($('#carrera').val()) && String(g.nivel) === nivel && !vistas[g.asignatura_id]) {
                     vistas[g.asignatura_id] = true;
                     asignaturas.push({id: g.asignatura_id, texto: g.asignatura});
                 }
@@ -191,7 +217,7 @@
             var paralelos = [];
 
             $.each(grupos, function (i, g) {
-                if (String(g.asignatura_id) === asignaturaId) {
+                if (String(g.carrera_id) === String($('#carrera').val()) && String(g.nivel) === String($('#nivel').val()) && String(g.asignatura_id) === asignaturaId) {
                     paralelos.push({id: g.id, texto: 'Paralelo ' + g.paralelo});
                 }
             });
@@ -219,6 +245,10 @@
 
                 grupoActual = grupoId;
                 estudiantes = r.estudiantes;
+
+                var grupoSeleccionado = grupos.find(function (g) { return String(g.id) === String(grupoId); });
+                $('#nombreCarreraGrupo').text(grupoSeleccionado ? grupoSeleccionado.carrera : '');
+                $('#nivelSeleccionado').text(grupoSeleccionado ? grupoSeleccionado.nivel : '');
 
                 $('#nombreAsignatura').text(r.asignatura);
                 $('#nombreParalelo').text(r.paralelo);

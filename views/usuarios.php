@@ -169,7 +169,7 @@
             var u = lista[$(this).data('i')];
             limpiarFormulario();
             $('#tituloModal').text('Editar usuario');
-            $('#ayudaClave').text('DÃ©jela vacÃ­a para no cambiar la clave');
+            $('#ayudaClave').text('Dejela vacía para no cambiar la clave');
             $('#id').val(u.id);
             $('#username').val(u.username);
             $('#nombre').val(u.nombre);
@@ -210,7 +210,7 @@
 
         $(document).on('click', '.btnEliminar', function () {
             var u = lista[$(this).data('i')];
-            if (!confirm('Â¿Eliminar al usuario ' + u.username + '?')) {
+            if (!confirm('¿Eliminar al usuario ' + u.username + '?')) {
                 return;
             }
             $.post('models/usuarios/delete.php', { id: u.id }, function (r) {

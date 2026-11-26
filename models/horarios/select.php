@@ -15,9 +15,11 @@ if ($periodo === null) {
 $periodoId = (int) $periodo['id'];
 
 // Grupos del periodo activo. El COORDINADOR solo ve los de su carrera (filtro en el servidor)
-$base = "SELECT g.id, a.nombre AS asignatura, a.nivel, g.paralelo
+$base = "SELECT g.id, g.asignatura_id, a.nombre AS asignatura, a.nivel,
+                a.carrera_id, c.nombre AS carrera, g.paralelo
          FROM grupo g
          JOIN asignatura a ON a.id = g.asignatura_id
+         JOIN carrera c ON c.id = a.carrera_id
          WHERE g.periodo_id = ?";
 if ($usuario['perfil'] === 'COORDINADOR') {
     $carrera = (int) $usuario['carrera_id'];
@@ -33,7 +35,13 @@ $grupos = array();
 while ($fila = $res->fetch_assoc()) {
     $grupos[] = array(
         "id" => $fila['id'],
-        "texto" => $fila['asignatura'] . ' (nivel ' . $fila['nivel'] . ') - Paralelo ' . $fila['paralelo']
+        "asignatura_id" => (int) $fila['asignatura_id'],
+        "asignatura" => $fila['asignatura'],
+        "nivel" => (int) $fila['nivel'],
+        "carrera_id" => (int) $fila['carrera_id'],
+        "carrera" => $fila['carrera'],
+        "paralelo" => $fila['paralelo'],
+        "texto" => $fila['carrera'] . ' - Nivel ' . $fila['nivel'] . ' - ' . $fila['asignatura'] . ' - Paralelo ' . $fila['paralelo']
     );
 }
 

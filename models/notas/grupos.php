@@ -16,9 +16,10 @@ if ($periodo === null) {
 $periodoId = (int) $periodo['id'];
 
 // Grupos del periodo activo. El DOCENTE solo ve los suyos (filtro en el servidor)
-$sql = "SELECT g.id, g.asignatura_id, a.nombre AS asignatura, a.nivel, g.paralelo
+$sql = "SELECT g.id, g.asignatura_id, a.nombre AS asignatura, a.nivel, a.carrera_id, c.nombre AS carrera, g.paralelo
         FROM grupo g
         JOIN asignatura a ON a.id = g.asignatura_id
+        JOIN carrera c ON c.id = a.carrera_id
         WHERE g.periodo_id = ?";
 if ($usuario['perfil'] === 'DOCENTE') {
     $docenteId = (int) $usuario['id'];

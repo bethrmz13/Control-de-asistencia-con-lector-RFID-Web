@@ -34,9 +34,10 @@ $nivel = (int) $est['nivel'];
 
 // Grupos del periodo, de su carrera, de su nivel o inferior, con estado AUN_NO_CURSA o REPROBADA,
 // y de asignaturas en las que todavia no esta matriculado (en ningun paralelo)
-$sql = "SELECT g.id, a.nombre AS asignatura, a.nivel, g.paralelo, u.nombre AS docente
+$sql = "SELECT g.id, a.nombre AS asignatura, a.nivel, c.nombre AS carrera, g.paralelo, u.nombre AS docente
         FROM grupo g
         JOIN asignatura a ON a.id = g.asignatura_id
+        JOIN carrera c ON c.id = a.carrera_id
         JOIN registro_academico r ON r.asignatura_id = a.id AND r.estudiante_cedula = ?
         LEFT JOIN usuario u ON u.id = g.docente_id
         WHERE g.periodo_id = ? AND a.carrera_id = ? AND a.nivel <= ?

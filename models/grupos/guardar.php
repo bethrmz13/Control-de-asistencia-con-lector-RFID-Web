@@ -7,6 +7,8 @@ header('Content-Type: application/json; charset=utf-8');
 $usuario = exigirPerfil(array('ADMIN', 'COORDINADOR'));
 
 $asignatura = filter_input(INPUT_POST, 'asignatura', FILTER_VALIDATE_INT);
+$carrera = filter_input(INPUT_POST, 'carrera', FILTER_VALIDATE_INT);
+$nivel = filter_input(INPUT_POST, 'nivel', FILTER_VALIDATE_INT);
 $paralelo = isset($_POST['paralelo']) && is_string($_POST['paralelo']) ? trim($_POST['paralelo']) : '';
 $docente = null;   // puede quedar sin docente
 if (isset($_POST['docente']) && is_string($_POST['docente']) && trim($_POST['docente']) !== '') {
@@ -19,6 +21,10 @@ if (isset($_POST['docente']) && is_string($_POST['docente']) && trim($_POST['doc
 
 if (!$asignatura || $asignatura <= 0) {
     echo json_encode(array("error" => "Seleccione la asignatura"));
+    exit;
+}
+if (!$carrera || $carrera <= 0 || !$nivel || $nivel <= 0) {
+    echo json_encode(array("error" => "Seleccione una carrera y un nivel válidos"));
     exit;
 }
 if (!in_array($paralelo, array('A', 'B', 'C'), true)) {
@@ -38,13 +44,18 @@ if ($periodo === null) {
 $periodoId = (int) $periodo['id'];
 
 // La asignatura debe existir y, si es COORDINADOR, ser de su carrera
-$stmt = $conn->prepare("SELECT carrera_id FROM asignatura WHERE id = ?");
+$stmt = $conn->prepare("SELECT carrera_id, nivel FROM asignatura WHERE id = ?");
 $stmt->bind_param("i", $asignatura);
 $stmt->execute();
 $fila = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 if (!$fila) {
     echo json_encode(array("error" => "La asignatura no existe"));
+    $conn->close();
+    exit;
+}
+if ((int) $fila['carrera_id'] !== $carrera || (int) $fila['nivel'] !== $nivel) {
+    echo json_encode(array("error" => "La asignatura no corresponde a la carrera y nivel seleccionados"));
     $conn->close();
     exit;
 }

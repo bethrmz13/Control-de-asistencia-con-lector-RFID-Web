@@ -36,7 +36,7 @@ $periodoId = (int) $periodo['id'];
 // Comprobar que el grupo exista en el periodo activo.
 $stmt = $conn->prepare(
     "SELECT g.id, g.paralelo, g.docente_id,
-            a.nombre AS asignatura, a.carrera_id,
+            a.nombre AS asignatura, a.nivel, a.carrera_id,
             c.nombre AS carrera
      FROM grupo g
      JOIN asignatura a ON a.id = g.asignatura_id
@@ -149,6 +149,7 @@ echo json_encode(array(
     "success" => true,
     "periodo" => $periodo['nombre'],
     "asignatura" => $datosGrupo['asignatura'],
+    "nivel" => $datosGrupo['nivel'],
     "paralelo" => $datosGrupo['paralelo'],
     "carrera" => $datosGrupo['carrera'],
     "estudiantes" => $estudiantes,

@@ -1,8 +1,26 @@
+<?php $u = usuarioActual(); $esCoordinador = ($u !== null && $u['perfil'] === 'COORDINADOR'); ?>
 <h3>Horarios</h3>
 <div id="mensaje"></div>
 
-<div class="d-flex justify-content-between mb-3">
-    <select id="grupo" class="form-select w-50"></select>
+<div class="row g-2 align-items-end mb-3">
+    <div id="campoCarreraHorario" class="col-md-3">
+        <label for="carreraHorario" class="form-label">Carrera</label>
+        <select id="carreraHorario" class="form-select" disabled><option value="">Seleccione una carrera</option></select>
+    </div>
+    <div class="col-md-2">
+        <label for="nivelHorario" class="form-label">Nivel</label>
+        <select id="nivelHorario" class="form-select" disabled><option value="">Seleccione un nivel</option></select>
+    </div>
+    <div class="col-md-4">
+        <label for="asignaturaHorario" class="form-label">Asignatura</label>
+        <select id="asignaturaHorario" class="form-select" disabled><option value="">Seleccione una asignatura</option></select>
+    </div>
+    <div class="col-md-3">
+        <label for="grupo" class="form-label">Paralelo</label>
+        <select id="grupo" class="form-select" disabled><option value="">Seleccione un paralelo</option></select>
+    </div>
+</div>
+<div class="d-flex justify-content-end mb-3">
     <button type="button" id="btnNuevo" class="btn btn-primary" disabled>Nuevo</button>
 </div>
 
@@ -64,7 +82,55 @@
 
         var modal = new bootstrap.Modal(document.getElementById('modalHorario'));
         var lista = [];     
+        var grupos = [];
+        var esCoordinador = <?php echo $esCoordinador ? 'true' : 'false'; ?>;
         var dias = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+        function actualizarNiveles(carrera, nivelElegido) {
+            var niveles = [];
+            $.each(grupos, function (_, g) {
+                var nivel = String(g.nivel);
+                if (String(g.carrera_id) === String(carrera) && niveles.indexOf(nivel) < 0) niveles.push(nivel);
+            });
+            niveles.sort(function (a, b) { return Number(a) - Number(b); });
+            llenarCombo('#nivelHorario', niveles.map(function (n) { return {id:n, texto:'Nivel ' + n}; }), 'Seleccione un nivel');
+            $('#nivelHorario').prop('disabled', !carrera || !niveles.length);
+            if (nivelElegido) $('#nivelHorario').val(String(nivelElegido));
+            actualizarAsignaturas(carrera, $('#nivelHorario').val());
+        }
+
+        function actualizarAsignaturas(carrera, nivel, asignaturaElegida) {
+            var asignaturas = [];
+            $.each(grupos, function (_, g) {
+                if (String(g.carrera_id) === String(carrera) && String(g.nivel) === String(nivel) &&
+                    !asignaturas.some(function (a) { return String(a.id) === String(g.asignatura_id); })) {
+                    asignaturas.push({id:g.asignatura_id, texto:g.asignatura});
+                }
+            });
+            llenarCombo('#asignaturaHorario', asignaturas, 'Seleccione una asignatura');
+            $('#asignaturaHorario').prop('disabled', !carrera || !nivel || !asignaturas.length);
+            if (asignaturaElegida) $('#asignaturaHorario').val(String(asignaturaElegida));
+            actualizarGrupos(carrera, nivel, $('#asignaturaHorario').val());
+        }
+
+        function actualizarGrupos(carrera, nivel, asignatura, grupoElegido) {
+            var opciones = [];
+            $.each(grupos, function (_, g) {
+                if (String(g.carrera_id) === String(carrera) && String(g.nivel) === String(nivel) &&
+                    String(g.asignatura_id) === String(asignatura)) {
+                    opciones.push({id:g.id, texto:'Paralelo ' + g.paralelo});
+                }
+            });
+            llenarCombo('#grupo', opciones, 'Seleccione un paralelo');
+            $('#grupo').prop('disabled', !asignatura || !opciones.length);
+            if (grupoElegido) $('#grupo').val(String(grupoElegido));
+        }
+
+        function limpiarHorarios() {
+            lista = [];
+            $('#tabla tbody').html('<tr><td colspan="5" class="text-center text-muted">Seleccione carrera, nivel, asignatura y paralelo para ver el horario.</td></tr>');
+            $('#btnNuevo').prop('disabled', true);
+        }
 
         // Carga los grupos del periodo activo y, si hay uno elegido, sus horarios
         function cargar() {
@@ -75,9 +141,40 @@
                     $('#btnNuevo').prop('disabled', true);
                     return;
                 }
-                llenarCombo('#grupo', r.grupos, 'Seleccione un grupo del periodo ' + r.periodo);
+                grupos = r.grupos || [];
+                if (grupos.length && (typeof grupos[0].carrera_id === 'undefined' || typeof grupos[0].asignatura_id === 'undefined')) {
+                    mostrarMensaje('#mensaje', 'La página necesita la versión actualizada de models/horarios/select.php para cargar los filtros de carrera y nivel.', 'warning');
+                    $('#carreraHorario, #nivelHorario, #asignaturaHorario, #grupo, #btnNuevo').prop('disabled', true);
+                    $('#tabla tbody').html('<tr><td colspan="5" class="text-center text-muted">Actualice models/horarios/select.php y vuelva a cargar la página.</td></tr>');
+                    return;
+                }
+                if (!grupos.length) {
+                    mostrarMensaje('#mensaje', 'No hay grupos disponibles para su carrera en el periodo activo. Revise la sección Grupos o el periodo académico.', 'info');
+                    $('#carreraHorario, #nivelHorario, #asignaturaHorario, #grupo, #btnNuevo').prop('disabled', true);
+                    $('#tabla tbody').html('<tr><td colspan="5" class="text-center text-muted">No hay grupos disponibles para mostrar horarios.</td></tr>');
+                    return;
+                }
+                var carreras = [];
+                $.each(grupos, function (_, g) {
+                    if (!carreras.some(function (c) { return String(c.id) === String(g.carrera_id); })) {
+                        carreras.push({id:g.carrera_id, texto:g.carrera});
+                    }
+                });
+                llenarCombo('#carreraHorario', carreras, 'Seleccione una carrera');
+                $('#carreraHorario').prop('disabled', !carreras.length);
                 if (elegido) {
-                    $('#grupo').val(elegido);
+                    var seleccionado = grupos.find(function (g) { return String(g.id) === String(elegido); });
+                    if (seleccionado) {
+                        $('#carreraHorario').val(String(seleccionado.carrera_id));
+                        actualizarNiveles(seleccionado.carrera_id, seleccionado.nivel);
+                        actualizarAsignaturas(seleccionado.carrera_id, seleccionado.nivel, seleccionado.asignatura_id);
+                        actualizarGrupos(seleccionado.carrera_id, seleccionado.nivel, seleccionado.asignatura_id, elegido);
+                    }
+                } else {
+                    llenarCombo('#nivelHorario', [], 'Seleccione un nivel');
+                    llenarCombo('#asignaturaHorario', [], 'Seleccione una asignatura');
+                    llenarCombo('#grupo', [], 'Seleccione un paralelo');
+                    $('#nivelHorario, #asignaturaHorario, #grupo').prop('disabled', true);
                 }
                 lista = r.horarios;
                 var html = '';
@@ -93,7 +190,9 @@
                         '</td></tr>';
                 });
                 if (elegido && html === '') {
-                    html = '<tr><td colspan="5" class="text-muted">Este grupo todavía no tiene horarios</td></tr>';
+                    html = '<tr><td colspan="5" class="text-center text-muted">Este grupo todavía no tiene horarios</td></tr>';
+                } else if (!elegido) {
+                    html = '<tr><td colspan="5" class="text-center text-muted">Seleccione carrera, nivel, asignatura y paralelo para ver el horario.</td></tr>';
                 }
                 $('#tabla tbody').html(html);
                 $('#btnNuevo').prop('disabled', !$('#grupo').val());
@@ -101,6 +200,23 @@
                 mostrarMensaje('#mensaje', 'No se pudo cargar la lista', 'danger');
             });
         }
+
+        $('#carreraHorario').on('change', function () {
+            limpiarHorarios();
+            actualizarNiveles($(this).val());
+        });
+        $('#nivelHorario').on('change', function () {
+            limpiarHorarios();
+            actualizarAsignaturas($('#carreraHorario').val(), $(this).val());
+        });
+        $('#asignaturaHorario').on('change', function () {
+            limpiarHorarios();
+            actualizarGrupos($('#carreraHorario').val(), $('#nivelHorario').val(), $(this).val());
+        });
+        $('#grupo').on('change', function () {
+            if ($(this).val()) cargar();
+            else limpiarHorarios();
+        });
 
         function limpiarFormulario() {
             $('#id').val('');
@@ -132,8 +248,6 @@
             }
             return true;
         }
-
-        $('#grupo').change(cargar);
 
         $('#btnNuevo').click(function () {
             limpiarFormulario();
