@@ -21,7 +21,7 @@ $menu = EnlacesModel::menu($u);
 
     <header class="banner text-center">
         <h1>Control de asistencia con lector RFID</h1>
-        <p>Computación Visual - FISEI, Universidad Técnica de Ambato</p>
+        <p>FISEI, Universidad Técnica de Ambato</p>
     </header>
 
     <?php if (!$kiosco) { ?>
@@ -61,6 +61,16 @@ $menu = EnlacesModel::menu($u);
             </div>
         </div>
     </nav>
+    <?php } ?>
+
+    <?php if ($kiosco) { ?>
+        <div class="container text-end my-2">
+            <a href="models/logout.php"
+            class="btn btn-outline-secondary btn-sm"
+            onclick="return confirm('¿Desea cerrar la sesión?');">
+                Salir
+            </a>
+        </div>
     <?php } ?>
 
     <!-- Seccion de trabajo: aqui se muestra la pagina pedida -->
