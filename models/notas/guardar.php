@@ -30,8 +30,9 @@ if ($periodo === null) {
 $periodoId = (int) $periodo['id'];
 
 $stmt = $conn->prepare("SELECT docente_id FROM grupo WHERE id = ? AND periodo_id = ?");
+if (!$stmt) { $conn->close(); echo json_encode(array("error" => "No se pudo consultar el grupo")); exit; }
 $stmt->bind_param("ii", $grupoId, $periodoId);
-$stmt->execute();
+if (!$stmt->execute()) { $stmt->close(); $conn->close(); echo json_encode(array("error" => "No se pudo consultar el grupo")); exit; }
 $grupo = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 if (!$grupo) {
@@ -51,8 +52,9 @@ $stmt = $conn->prepare("SELECT e.cedula, e.apellido, e.nombre, m.nota
                         FROM matricula m
                         JOIN estudiante e ON e.cedula = m.estudiante_cedula
                         WHERE m.grupo_id = ?");
+if (!$stmt) { $conn->close(); echo json_encode(array("error" => "No se pudieron consultar las matrículas")); exit; }
 $stmt->bind_param("i", $grupoId);
-$stmt->execute();
+if (!$stmt->execute()) { $stmt->close(); $conn->close(); echo json_encode(array("error" => "No se pudieron consultar las matrículas")); exit; }
 $res = $stmt->get_result();
 $actuales = array();
 while ($fila = $res->fetch_assoc()) {
@@ -75,7 +77,11 @@ foreach ($enviadas as $item) {
     }
     $nombre = $actuales[$cedula]['apellido'] . ' ' . $actuales[$cedula]['nombre'];
 
-    $texto = isset($item['nota']) && is_string($item['nota']) ? trim($item['nota']) : '';
+    if (!array_key_exists('nota', $item) || !is_string($item['nota'])) {
+        $errores[] = "La nota de " . $nombre . " está ausente o tiene un formato inválido";
+        continue;
+    }
+    $texto = trim($item['nota']);
     $texto = str_replace(',', '.', $texto);        // acepta coma decimal
     if ($texto === '') {
         $nuevas[$cedula] = null;                   // vacia: se guarda NULL
@@ -93,6 +99,7 @@ if (count($errores) > 0) {
 
 // (3) Se guarda una por una, revisando cada UPDATE. Solo las que cambiaron
 $stmt = $conn->prepare("UPDATE matricula SET nota = ? WHERE grupo_id = ? AND estudiante_cedula = ?");
+if (!$stmt) { $conn->close(); echo json_encode(array("error" => "No se pudo preparar el guardado de notas")); exit; }
 $guardadas = array();   // cedula => nota anterior (por si hay que devolverlas)
 foreach ($nuevas as $cedula => $nota) {
 

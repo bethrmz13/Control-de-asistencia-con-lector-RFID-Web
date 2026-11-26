@@ -113,6 +113,8 @@
         var grupos = [];
         var estudiantes = [];
         var grupoActual = null;
+        var solicitudNotas = null;
+        var solicitudNotasId = 0;
         var esCoordinador = <?php echo $esCoordinador ? 'true' : 'false'; ?>;
 
         // Carga los grupos (el servidor ya filtra por docente)
@@ -159,6 +161,11 @@
         }
 
         function limpiarNotas() {
+            solicitudNotasId++;
+            if (solicitudNotas) {
+                solicitudNotas.abort();
+                solicitudNotas = null;
+            }
             grupoActual = null;
             estudiantes = [];
             $('#mensajeNotas').html('');
@@ -236,7 +243,9 @@
                 return;
             }
 
-            $.getJSON('models/notas/select.php', {grupo: grupoId}, function (r) {
+            var solicitudId = solicitudNotasId;
+            solicitudNotas = $.getJSON('models/notas/select.php', {grupo: grupoId}).done(function (r) {
+                if (solicitudId !== solicitudNotasId || String($('#paralelo').val()) !== String(grupoId)) return;
 
                 if (r.error) {
                     mostrarMensaje('#mensajeNotas', r.error, 'danger');
@@ -279,7 +288,8 @@
                 $('#total').text(estudiantes.length);
                 $('#btnGuardar').prop('disabled', estudiantes.length === 0);
 
-            }).fail(function (xhr) {
+            }).fail(function (xhr, estado) {
+                if (estado === 'abort' || solicitudId !== solicitudNotasId) return;
 
                 var mensaje = 'No se pudieron cargar los estudiantes';
                 if (xhr.responseJSON && xhr.responseJSON.error) {
@@ -287,6 +297,8 @@
                 }
                 mostrarMensaje('#mensajeNotas', mensaje, 'danger');
 
+            }).always(function () {
+                if (solicitudId === solicitudNotasId) solicitudNotas = null;
             });
         });
 
@@ -319,15 +331,3 @@
                 var mensaje = 'No se pudo conectar con el servidor';
                 if (xhr.responseJSON && xhr.responseJSON.error) {
                     mensaje = xhr.responseJSON.error;
-                }
-                mostrarMensaje('#mensajeNotas', mensaje, 'danger');
-
-            }).always(function () {
-                $('#btnGuardar').prop('disabled', false);
-            });
-        });
-
-        cargar();
-
-    });
-</script>
