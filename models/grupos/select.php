@@ -18,11 +18,12 @@ $soloCarrera = ($usuario['perfil'] === 'COORDINADOR');
 $carreraUsuario = (int) $usuario['carrera_id'];
 
 // Grupos del periodo activo. El COORDINADOR solo ve los de su carrera (filtro en el servidor)
-$sql = "SELECT g.id, g.asignatura_id, a.nombre AS asignatura, a.nivel, g.paralelo,
+$sql = "SELECT g.id, g.asignatura_id, a.nombre AS asignatura, a.nivel, a.carrera_id, c.nombre AS carrera, g.paralelo,
                g.docente_id, u.nombre AS docente,
                (SELECT COUNT(*) FROM matricula m WHERE m.grupo_id = g.id) AS matriculados
         FROM grupo g
         JOIN asignatura a ON a.id = g.asignatura_id
+        JOIN carrera c ON c.id = a.carrera_id
         LEFT JOIN usuario u ON u.id = g.docente_id
         WHERE g.periodo_id = ?";
 if ($soloCarrera) {
@@ -45,7 +46,7 @@ while ($fila = $res->fetch_assoc()) {
 $stmt->close();
 
 // Combo de asignaturas (solo las de su carrera si es COORDINADOR)
-$sql = "SELECT a.id, CONCAT(a.nombre, ' (nivel ', a.nivel, ') - ', c.nombre) AS texto
+$sql = "SELECT a.id, a.carrera_id, a.nivel, a.nombre AS texto
         FROM asignatura a
         JOIN carrera c ON c.id = a.carrera_id";
 if ($soloCarrera) {
@@ -64,6 +65,23 @@ $asignaturas = array();
 while ($fila = $res->fetch_assoc()) {
     $asignaturas[] = $fila;
 }
+$stmt->close();
+
+// Carreras disponibles para el selector inicial.
+if ($soloCarrera) {
+    $stmt = $conn->prepare("SELECT id, nombre AS texto FROM carrera WHERE id = ? ORDER BY nombre");
+    $stmt->bind_param("i", $carreraUsuario);
+} else {
+    $stmt = $conn->prepare("SELECT id, nombre AS texto FROM carrera ORDER BY nombre");
+}
+if (!$stmt->execute()) {
+    echo json_encode(array("error" => "No se pudieron consultar las carreras"));
+    $conn->close();
+    exit;
+}
+$res = $stmt->get_result();
+$carreras = array();
+while ($fila = $res->fetch_assoc()) $carreras[] = $fila;
 $stmt->close();
 
 // Combo de docentes: usuarios DOCENTE activos
@@ -86,6 +104,7 @@ echo json_encode(array(
     "periodo" => $periodo['nombre'],
     "grupos" => $grupos,
     "asignaturas" => $asignaturas,
+    "carreras" => $carreras,
     "docentes" => $docentes
 ));
 $conn->close();

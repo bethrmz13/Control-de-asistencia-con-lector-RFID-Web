@@ -34,7 +34,7 @@ if ($usuario['perfil'] === 'COORDINADOR') {
 
     $stmt = $conn->prepare(
         "SELECT g.id, g.asignatura_id, g.paralelo,
-                a.nombre AS asignatura, a.nivel,
+                a.nombre AS asignatura, a.nivel, a.carrera_id,
                 c.nombre AS carrera
          FROM grupo g
          JOIN asignatura a ON a.id = g.asignatura_id
@@ -52,7 +52,7 @@ if ($usuario['perfil'] === 'COORDINADOR') {
 
     $stmt = $conn->prepare(
         "SELECT g.id, g.asignatura_id, g.paralelo,
-                a.nombre AS asignatura, a.nivel,
+                a.nombre AS asignatura, a.nivel, a.carrera_id,
                 c.nombre AS carrera
          FROM grupo g
          JOIN asignatura a ON a.id = g.asignatura_id
@@ -71,7 +71,7 @@ if ($usuario['perfil'] === 'COORDINADOR') {
     // El administrador puede consultar todos los grupos.
     $stmt = $conn->prepare(
         "SELECT g.id, g.asignatura_id, g.paralelo,
-                a.nombre AS asignatura, a.nivel,
+                a.nombre AS asignatura, a.nivel, a.carrera_id,
                 c.nombre AS carrera
          FROM grupo g
          JOIN asignatura a ON a.id = g.asignatura_id
@@ -131,6 +131,10 @@ while ($fila = $res->fetch_assoc()) {
     $grupos[] = array(
         "id" => (int) $fila['id'],
         "asignatura_id" => $idAsignatura,
+        "asignatura" => $fila['asignatura'],
+        "carrera_id" => (int) $fila['carrera_id'],
+        "carrera" => $fila['carrera'],
+        "nivel" => (int) $fila['nivel'],
         "paralelo" => $fila['paralelo'],
         "texto" => 'Paralelo ' . $fila['paralelo']
     );

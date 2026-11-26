@@ -14,6 +14,7 @@
     <table class="table table-striped align-middle" id="tablaDisponibles">
         <thead>
             <tr>
+                <th>Carrera</th>
                 <th>Asignatura</th>
                 <th>Nivel</th>
                 <th>Paralelo</th>
@@ -31,6 +32,7 @@
     <table class="table table-striped align-middle" id="tablaMis">
         <thead>
             <tr>
+                <th>Carrera</th>
                 <th>Asignatura</th>
                 <th>Paralelo</th>
                 <th>Nota</th>
@@ -67,6 +69,7 @@
                     var nota = (m.nota === null) ? 'Sin nota' : m.nota;
                     var deshabilitado = (!abierta || m.nota !== null) ? ' disabled' : '';
                     html += '<tr>' +
+                        '<td>' + escaparHtml(m.carrera) + '</td>' +
                         '<td>' + escaparHtml(m.asignatura) + '</td>' +
                         '<td>' + escaparHtml(m.paralelo) + '</td>' +
                         '<td>' + escaparHtml(nota) + '</td>' +
@@ -74,7 +77,7 @@
                         '</tr>';
                 });
                 if (html === '') {
-                    html = '<tr><td colspan="4" class="text-center text-muted">No tiene materias matriculadas en este periodo</td></tr>';
+                    html = '<tr><td colspan="5" class="text-center text-muted">No tiene materias matriculadas en este periodo</td></tr>';
                 }
                 $('#tablaMis tbody').html(html);
 
@@ -98,6 +101,7 @@
                 var html = '';
                 $.each(disponibles, function (i, g) {
                     html += '<tr>' +
+                        '<td>' + escaparHtml(g.carrera) + '</td>' +
                         '<td>' + escaparHtml(g.asignatura) + '</td>' +
                         '<td>' + escaparHtml(g.nivel) + '</td>' +
                         '<td>' + escaparHtml(g.paralelo) + '</td>' +
@@ -107,7 +111,7 @@
                         '</tr>';
                 });
                 if (html === '') {
-                    html = '<tr><td colspan="6" class="text-center text-muted">No hay grupos disponibles</td></tr>';
+                    html = '<tr><td colspan="7" class="text-center text-muted">No hay grupos disponibles</td></tr>';
                 }
                 $('#tablaDisponibles tbody').html(html);
             }).fail(function () {

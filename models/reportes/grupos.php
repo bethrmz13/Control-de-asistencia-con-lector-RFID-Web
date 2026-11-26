@@ -16,9 +16,12 @@ if ($periodo === null) {
 $periodoId = (int) $periodo['id'];
 
 // DOCENTE: sus grupos. COORDINADOR: los de su carrera. ADMIN: todos (filtro en el servidor)
-$sql = "SELECT g.id, CONCAT(a.nombre, ' (nivel ', a.nivel, ') - Paralelo ', g.paralelo) AS texto
+$sql = "SELECT g.id, a.carrera_id, c.nombre AS carrera, a.nivel,
+               g.asignatura_id, a.nombre AS asignatura, g.paralelo,
+               CONCAT(c.nombre, ' - Nivel ', a.nivel, ' - ', a.nombre, ' - Paralelo ', g.paralelo) AS texto
         FROM grupo g
         JOIN asignatura a ON a.id = g.asignatura_id
+        JOIN carrera c ON c.id = a.carrera_id
         WHERE g.periodo_id = ?";
 if ($usuario['perfil'] === 'DOCENTE') {
     $docenteId = (int) $usuario['id'];
@@ -40,7 +43,16 @@ if (!$stmt->execute()) {
 $res = $stmt->get_result();
 $grupos = array();
 while ($fila = $res->fetch_assoc()) {
-    $grupos[] = $fila;
+    $grupos[] = array(
+        "id" => (int) $fila['id'],
+        "carrera_id" => (int) $fila['carrera_id'],
+        "carrera" => $fila['carrera'],
+        "nivel" => (int) $fila['nivel'],
+        "asignatura_id" => (int) $fila['asignatura_id'],
+        "asignatura" => $fila['asignatura'],
+        "paralelo" => $fila['paralelo'],
+        "texto" => $fila['texto']
+    );
 }
 
 echo json_encode(array("success" => true, "periodo" => $periodo['nombre'], "grupos" => $grupos));

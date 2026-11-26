@@ -1,3 +1,4 @@
+<?php $u = usuarioActual(); $esCoordinador = ($u !== null && $u['perfil'] === 'COORDINADOR'); ?>
 <h3>Grupos</h3>
 
 <div id="mensaje"></div>
@@ -27,6 +28,7 @@
 
         <thead class="table-dark">
             <tr>
+                <th>Carrera</th>
                 <th>Asignatura</th>
                 <th>Nivel</th>
                 <th>Paralelo</th>
@@ -64,9 +66,17 @@
 
                 <input type="hidden" id="id">
 
+                <div id="campoCarreraGrupo" class="mb-3">
+                    <label for="carreraGrupo" class="form-label">Carrera</label>
+                    <select id="carreraGrupo" class="form-select"></select>
+                </div>
+                <div class="mb-3">
+                    <label for="nivelGrupo" class="form-label">Nivel</label>
+                    <select id="nivelGrupo" class="form-select" disabled></select>
+                </div>
                 <div class="mb-3">
                     <label for="asignatura" class="form-label">Asignatura</label>
-                    <select id="asignatura" class="form-select"></select>
+                    <select id="asignatura" class="form-select" disabled></select>
                     <div id="avisoAsignatura" class="form-text d-none">
                         La asignatura no se puede cambiar al editar.
                     </div>
@@ -116,6 +126,30 @@
         var lista = [];
         var asignaturas = [];
         var docentes = [];
+        var carreras = [];
+        var esCoordinador = <?php echo $esCoordinador ? 'true' : 'false'; ?>;
+
+        function actualizarNiveles(seleccionado) {
+            var carrera = $('#carreraGrupo').val();
+            var niveles = [];
+            $.each(asignaturas, function (_, a) {
+                if (String(a.carrera_id) === String(carrera) && niveles.indexOf(String(a.nivel)) < 0) niveles.push(String(a.nivel));
+            });
+            niveles.sort(function (a, b) { return Number(a) - Number(b); });
+            llenarCombo('#nivelGrupo', niveles.map(function (n) { return {id:n, texto:'Nivel ' + n}; }), 'Seleccione un nivel');
+            $('#nivelGrupo').prop('disabled', !carrera || !niveles.length);
+            if (seleccionado) $('#nivelGrupo').val(String(seleccionado));
+            actualizarAsignaturas();
+        }
+
+        function actualizarAsignaturas(seleccionada) {
+            var carrera = $('#carreraGrupo').val();
+            var nivel = $('#nivelGrupo').val();
+            var opciones = asignaturas.filter(function (a) { return String(a.carrera_id) === String(carrera) && String(a.nivel) === String(nivel); });
+            llenarCombo('#asignatura', opciones, 'Seleccione una asignatura');
+            $('#asignatura').prop('disabled', !carrera || !nivel || !opciones.length);
+            if (seleccionada) $('#asignatura').val(String(seleccionada));
+        }
 
         // Carga los grupos del periodo activo y los combos
         function cargar() {
@@ -134,6 +168,7 @@
                 lista = r.grupos;
                 asignaturas = r.asignaturas;
                 docentes = r.docentes;
+                carreras = r.carreras;
 
                 var html = '';
 
@@ -144,6 +179,7 @@
                         : escaparHtml(g.docente);
 
                     html += '<tr>' +
+                        '<td>' + escaparHtml(g.carrera) + '</td>' +
                         '<td>' + escaparHtml(g.asignatura) + '</td>' +
                         '<td>' + escaparHtml(g.nivel) + '</td>' +
                         '<td>' + escaparHtml(g.paralelo) + '</td>' +
@@ -157,7 +193,7 @@
                 });
 
                 if (lista.length === 0) {
-                    html = '<tr><td colspan="6" class="text-center text-muted">' +
+                    html = '<tr><td colspan="7" class="text-center text-muted">' +
                         'No existen grupos en este periodo.</td></tr>';
                 }
 
@@ -184,8 +220,11 @@
             $('#mensajeModal').html('');
             $('#avisoAsignatura').addClass('d-none');
 
-            llenarCombo('#asignatura', asignaturas, 'Seleccione');
-            $('#asignatura').prop('disabled', false).val('');
+            llenarCombo('#carreraGrupo', carreras, 'Seleccione una carrera');
+            llenarCombo('#nivelGrupo', [], 'Seleccione primero una carrera');
+            llenarCombo('#asignatura', [], 'Seleccione primero un nivel');
+            $('#carreraGrupo').prop('disabled', false).val('');
+            $('#nivelGrupo, #asignatura').prop('disabled', true);
 
             llenarCombo('#docente', docentes, 'Sin docente');
             $('#docente').val('');
@@ -195,8 +234,8 @@
 
         function validar() {
 
-            if (!$('#asignatura').val()) {
-                mostrarMensaje('#mensajeModal', 'Seleccione la asignatura', 'warning');
+            if (!$('#carreraGrupo').val() || !$('#nivelGrupo').val() || !$('#asignatura').val()) {
+                mostrarMensaje('#mensajeModal', 'Seleccione carrera, nivel y asignatura', 'warning');
                 return false;
             }
 
@@ -214,6 +253,9 @@
             modal.show();
         });
 
+        $('#carreraGrupo').on('change', function () { actualizarNiveles(); });
+        $('#nivelGrupo').on('change', function () { actualizarAsignaturas(); });
+
         $(document).on('click', '.btnEditar', function () {
 
             var g = lista[$(this).data('i')];
@@ -222,7 +264,10 @@
             $('#tituloModal').text('Editar grupo');
             $('#id').val(g.id);
 
-            $('#asignatura').val(g.asignatura_id).prop('disabled', true);
+            $('#carreraGrupo').val(String(g.carrera_id)).prop('disabled', true);
+            actualizarNiveles(g.nivel);
+            $('#nivelGrupo').prop('disabled', true);
+            $('#asignatura').val(String(g.asignatura_id)).prop('disabled', true);
             $('#avisoAsignatura').removeClass('d-none');
 
             $('input[name="paralelo"][value="' + g.paralelo + '"]').prop('checked', true);
@@ -250,6 +295,8 @@
 
             $.post(url, {
                 id: $('#id').val(),
+                carrera: $('#carreraGrupo').val(),
+                nivel: $('#nivelGrupo').val(),
                 asignatura: $('#asignatura').val(),
                 paralelo: $('input[name="paralelo"]:checked').val(),
                 docente: $('#docente').val()

@@ -25,10 +25,11 @@ $periodo = periodoActivo($conn);
 $materias = array();
 if ($periodo !== null) {
     $periodoId = (int) $periodo['id'];
-    $stmt = $conn->prepare('SELECT g.id, a.nombre AS asignatura, g.paralelo, m.nota
+    $stmt = $conn->prepare('SELECT g.id, a.nombre AS asignatura, c.nombre AS carrera, g.paralelo, m.nota
                             FROM matricula m
                             JOIN grupo g ON g.id = m.grupo_id
                             JOIN asignatura a ON a.id = g.asignatura_id
+                            JOIN carrera c ON c.id = a.carrera_id
                             WHERE m.estudiante_cedula = ? AND g.periodo_id = ?
                             ORDER BY a.nombre');
     $stmt->bind_param('si', $est['cedula'], $periodoId);

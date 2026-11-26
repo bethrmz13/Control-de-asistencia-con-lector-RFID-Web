@@ -35,13 +35,15 @@ if (!preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $fecha) || !checkdate((int) $p
 $conn = conectar();
 
 // El grupo debe ser del usuario: el DOCENTE el suyo, el COORDINADOR uno de su carrera
-$stmt = $conn->prepare("SELECT g.paralelo, g.docente_id, a.nombre AS asignatura, a.carrera_id, p.nombre AS periodo
+$stmt = $conn->prepare("SELECT g.paralelo, g.docente_id, a.nombre AS asignatura, a.carrera_id, p.nombre AS periodo,
+                               p.fecha_inicio, p.fecha_fin
                         FROM grupo g
                         JOIN asignatura a ON a.id = g.asignatura_id
                         JOIN periodo p ON p.id = g.periodo_id
                         WHERE g.id = ?");
+if (!$stmt) { $conn->close(); terminar(500, 'No se pudo preparar la consulta del grupo'); }
 $stmt->bind_param("i", $grupoId);
-$stmt->execute();
+if (!$stmt->execute()) { $stmt->close(); $conn->close(); terminar(500, 'No se pudo consultar el grupo'); }
 $grupo = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
@@ -59,20 +61,28 @@ if (!$permitido) {
     $conn->close();
     terminar(403, 'No tiene permiso para ver el reporte de este grupo');
 }
+if ($fecha < $grupo['fecha_inicio'] || $fecha > $grupo['fecha_fin']) {
+    $conn->close();
+    terminar(400, 'La fecha debe estar dentro del periodo académico del grupo');
+}
 
 // Cada estudiante matriculado con PRESENTE o FALTA en la fecha elegida.
 // Si la fecha no cae en un dia de clase del grupo, no sale ninguna fila
-$stmt = $conn->prepare("SELECT e.cedula, e.apellido, e.nombre, h.hora_inicio, a.hora AS hora_llegada,
-                               IF(a.id IS NULL, 'FALTA', 'PRESENTE') AS estado
+$stmt = $conn->prepare("SELECT e.cedula, e.apellido, e.nombre, MIN(h.hora_inicio) AS hora_inicio,
+                               MIN(a.hora) AS hora_llegada,
+                               IF(COUNT(a.id) = 0, 'FALTA', 'PRESENTE') AS estado
                         FROM matricula m
                         JOIN estudiante e ON e.cedula = m.estudiante_cedula
                         JOIN horario h ON h.grupo_id = m.grupo_id
                         LEFT JOIN asistencia a ON a.estudiante_cedula = e.cedula AND a.horario_id = h.id
                                               AND a.fecha = ?
                         WHERE m.grupo_id = ? AND h.dia_semana = WEEKDAY(?) + 1
+                        GROUP BY e.cedula, e.apellido, e.nombre
                         ORDER BY e.apellido, e.nombre");
+if (!$stmt) { $conn->close(); terminar(500, 'No se pudo preparar la consulta de asistencia'); }
 $stmt->bind_param("sis", $fecha, $grupoId, $fecha);
 if (!$stmt->execute()) {
+    $stmt->close();
     $conn->close();
     terminar(500, 'No se pudo consultar la asistencia');
 }
