@@ -43,11 +43,6 @@
         border-top: .2rem solid #1d6fa5;
     }
 
-    #inicio .inicio-video {
-        max-width: 48rem;
-        max-height: 28rem;
-    }
-
     @media (max-width: 767.98px) {
         #inicio .inicio-carrusel-texto {
             min-height: 10rem;
@@ -158,21 +153,6 @@
             </div>
         </div>
     </section>
-    <?php
-    $rutaDemo = __DIR__ . '/../images/demo.mp4';
-    $demoDisponible = is_file($rutaDemo) && is_readable($rutaDemo) && filesize($rutaDemo) > 0;
-    ?>
-    <section class="inicio-portada rounded-3 p-4 p-md-5" aria-labelledby="inicioDemoTitulo">
-        <h2 id="inicioDemoTitulo" class="inicio-titulo h3 mb-3">Demostración del sistema RFID</h2>
-        <?php if ($demoDisponible) { ?>
-            <p id="inicioVideoEstado" class="mb-0" role="status">Cargando la demostración del lector RFID.</p>
-            <video id="inicioVideo" class="inicio-video w-100 rounded bg-dark" controls preload="metadata" playsinline hidden aria-labelledby="inicioDemoTitulo" src="images/demo.mp4">
-            </video>
-            <noscript>Activa JavaScript para ver la demostración.</noscript>
-        <?php } else { ?>
-            <p class="mb-0">El video del lector RFID estará disponible cuando se incorpore la grabación de la demostración.</p>
-        <?php } ?>
-    </section>
 </div>
 
 <script>
@@ -185,27 +165,5 @@
             var titulo = $(evento.relatedTarget).find('h3').text();
             $('#inicioCarruselEstado').text('Diapositiva ' + (evento.to + 1) + ' de ' + total + '. ' + titulo);
         });
-
-        var $video = $('#inicioVideo');
-        if ($video.length) {
-            var $estado = $('#inicioVideoEstado');
-
-            function mostrarVideo() {
-                $video.prop('hidden', false);
-                $estado.empty().prop('hidden', true);
-            }
-
-            function avisarError() {
-                $video.prop('hidden', true);
-                $estado.text('El video de la demostración no se pudo reproducir.').prop('hidden', false);
-            }
-
-            $video.on('loadedmetadata', mostrarVideo).on('error', avisarError);
-            if ($video[0].error) {
-                avisarError();
-            } else if ($video[0].readyState >= 1) {
-                mostrarVideo();
-            }
-        }
     });
 </script>

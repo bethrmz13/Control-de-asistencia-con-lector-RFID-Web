@@ -21,7 +21,7 @@ $menu = EnlacesModel::menu($u);
 
     <header class="banner text-center">
         <h1>Control de asistencia con lector RFID</h1>
-        <p>Computación Visual - FISEI, Universidad Técnica de Ambato</p>
+        <p>FISEI, Universidad Técnica de Ambato</p>
     </header>
 
     <?php if (!$kiosco) { ?>
